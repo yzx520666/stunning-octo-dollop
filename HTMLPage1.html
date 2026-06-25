@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+				<title>藏了很久的心动告白</title>
+				<script src="https://cdn.tailwindcss.com"></script>
+				<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+					<script>
+						tailwind.config = {
+						theme: {
+						extend: {
+						colors: {
+						lovePink: '#ff8fb1',
+						loveLight: '#ffe6ef',
+						loveDark: '#ff588b'
+						},
+						fontFamily: {
+						cute: ['system-ui', 'sans-serif']
+						}
+						}
+						}
+						}
+					</script>
+					<style type="text/tailwindcss">
+						@layer utilities {
+						.heart-bg {
+						background-image: radial-gradient(#ffc8dd 8%, transparent 8%);
+						background-size: 32px 32px;
+						}
+						.card-shadow {
+						box-shadow: 0 10px 30px rgba(255, 143, 177, 0.28);
+						}
+						.btn-animate {
+						transition: all 0.25s ease;
+						}
+						.btn-animate:hover {
+						transform: scale(1.04);
+						}
+						.float-heart {
+						animation: float 2.5s ease-in-out infinite;
+						}
+						@keyframes float {
+						0%, 100% { transform: translateY(0px); }
+						50% { transform: translateY(-10px); }
+						}
+						.shake {
+						animation: shake 0.4s ease-in-out;
+						}
+						@keyframes shake {
+						0%,100%{transform: translateX(0)}
+						25%{transform: translateX(-6px)}
+						75%{transform: translateX(6px)}
+						}
+						}
+					</style>
+				</head>
+	<body class="min-h-screen loveLight heart-bg flex items-center justify-center p-4">
+		<!-- 告白主卡片 -->
+		<div class="w-full max-w-md bg-white rounded-3xl p-8 card-shadow relative overflow-hidden">
+			<div class="absolute -top-16 -right-16 w-32 h-32 bg-loveLight rounded-full z-0"></div>
+			<div class="relative z-10">
+				<div class="text-center text-loveDark text-5xl mb-4 float-heart">
+					<i class="fa fa-heart"></i>
+				</div>
+				<h1 class="text-[24px] text-loveDark font-bold text-center mb-4">致偷偷喜欢的你</h1>
+				<p class="text-gray-600 leading-relaxed text-sm text-center mb-7">
+					和你聊天的每一刻我都格外开心，<br>
+						慢慢积攒了好多藏不住的心动。<br>
+                鼓起勇气想问你一个问题。
+            </p>
+
+				<!-- 多选项按钮 -->
+				<div class="flex flex-col gap-3 mb-8" id="optionBox">
+					<button onclick="submitAnswer(1)" class="btn-animate w-full py-4 rounded-2xl bg-lovePink text-white font-medium">
+						<i class="fa fa-heart mr-2"></i>我也喜欢你，愿意在一起
+					</button>
+					<button onclick="submitAnswer(2)" class="btn-animate w-full py-4 rounded-2xl bg-gray-100 text-gray-700 font-medium">
+						<i class="fa fa-meh-o mr-2"></i>想先慢慢互相了解
+					</button>
+					<button onclick="submitAnswer(3)" class="btn-animate w-full py-4 rounded-2xl bg-gray-100 text-gray-600 font-medium">
+						<i class="fa fa-frown-o mr-2"></i>只把你当成好朋友
+					</button>
+				</div>
+
+				<!-- 选择后展示对应文案 -->
+				<div id="res1" class="hidden p-5 rounded-2xl bg-loveLight border-2 border-lovePink mb-6">
+					<div class="text-center text-4xl mb-3 text-loveDark">♥♥♥</div>
+					<h3 class="text-lg font-bold text-loveDark text-center">真的太开心啦！</h3>
+					<p class="text-gray-600 text-sm text-center mt-2">往后所有温柔和偏爱，全都只给你一人。</p>
+				</div>
+				<div id="res2" class="hidden p-5 rounded-2xl bg-pink-50 border-2 border-pink-300 mb-6">
+					<div class="text-center text-4xl mb-3 text-pink-400">♡</div>
+					<h3 class="text-lg font-bold text-pink-500 text-center">没问题～</h3>
+					<p class="text-gray-600 text-sm text-center mt-2">我愿意慢慢靠近你，等你完全接受我。</p>
+				</div>
+				<div id="res3" class="hidden p-5 rounded-2xl bg-gray-50 border-2 border-gray-200 mb-6">
+					<div class="text-center text-4xl mb-3 text-gray-400">♡</div>
+					<h3 class="text-lg font-bold text-gray-500 text-center">没关系的</h3>
+					<p class="text-gray-600 text-sm text-center mt-2">能认识你就很幸运，我不会打扰你的生活。</p>
+				</div>
+
+				<!-- 管理员查看结果入口（只有你知道） -->
+				<div class="mt-6 pt-4 border-t border-pink-100">
+					<button onclick="openAdmin()" class="w-full py-2 rounded-xl border border-lovePink text-loveDark text-sm">
+						后台查看所有回答（仅你使用）
+					</button>
+				</div>
+
+				<!-- 管理员面板 -->
+				<div id="adminPanel" class="hidden mt-4 p-4 bg-loveLight rounded-xl">
+					<h4 class="font-bold text-loveDark mb-2">对方选择记录：</h4>
+					<div id="answerList" class="text-sm text-gray-700"></div>
+					<button onclick="clearAllData()" class="mt-3 text-xs py-1 px-3 bg-white rounded-lg border border-gray-300">清空所有记录</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// 存储数据（本地存储，云端版会替换成数据库存储）
+			const STORAGE_KEY = "confess_answer_list";
+
+			// 提交选择
+			function submitAnswer(type){
+			// 隐藏全部结果
+			document.getElementById("res1").classList.add("hidden");
+			document.getElementById("res2").classList.add("hidden");
+			document.getElementById("res3").classList.add("hidden");
+
+			let text = "";
+			if(type === 1) text = "选择1：互相喜欢，愿意交往";
+			if(type === 2) text = "选择2：希望先慢慢了解";
+			if(type === 3) text = "选择3：仅做普通朋友";
+
+			// 展示对应文案
+			document.getElementById(`res${type}`).classList.remove("hidden");
+
+			// 保存时间+答案
+			const now = new Date().toLocaleString();
+			const record = `[${now}] ${text}`;
+			let all = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+			all.push(record);
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+			}
+
+			// 打开管理面板查看记录
+			function openAdmin(){
+			const panel = document.getElementById("adminPanel");
+			panel.classList.toggle("hidden");
+			if(!panel.classList.contains("hidden")){
+			refreshRecord();
+			}
+			}
+
+			// 刷新记录列表
+			function refreshRecord(){
+			let all = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+			const box = document.getElementById("answerList");
+			if(all.length === 0){
+			box.innerHTML = "<p>暂无提交记录</p>";
+			}else{
+			box.innerHTML = all.join("<br>
+				<br>");
+    }
+}
+
+// 清空数据
+function clearAllData(){
+    localStorage.removeItem(STORAGE_KEY);
+    refreshRecord();
+}
+
+		</script>
+	</body>
+</html>
